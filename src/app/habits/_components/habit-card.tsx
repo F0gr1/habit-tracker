@@ -4,35 +4,51 @@
 import { useState } from 'react'
 import type { HabitModel } from '@/generated/prisma/models'
 
+type ColumnVariant = 'green' | 'cyan'
+
 type Props = {
   habit: HabitModel
+  variant: ColumnVariant
 }
 
-export function HabitCard({ habit }: Props) {
+export function HabitCard({ habit, variant }: Props) {
   const [done, setDone] = useState(false)
 
+  const activeColor  = variant === 'green' ? 'var(--green)'     : 'var(--cyan)'
+  const dimColor     = variant === 'green' ? 'var(--green-dim)'  : 'var(--cyan-dim)'
+  const mutedColor   = variant === 'green' ? 'var(--text-muted)' : '#1a4a5a'
+  const borderClass  = variant === 'green' ? 'terminal-border'   : 'terminal-border-cyan'
+
   return (
-    <li className="flex items-center gap-3 p-4 bg-white border rounded-lg shadow-sm">
+    <li
+      className={`p-3 ${borderClass} transition-all`}
+      style={{ background: done ? (variant === 'green' ? 'var(--green-muted)' : 'var(--cyan-muted)') : 'transparent' }}
+    >
       <button
         onClick={() => setDone(!done)}
-        className={`w-6 h-6 rounded-full border-2 flex-shrink-0 transition-colors ${
-          done ? 'border-blue-500' : 'border-gray-300'
-        }`}
-        style={done ? { backgroundColor: habit.color, borderColor: habit.color } : {}}
+        className="w-full text-left flex items-start gap-3"
         aria-label={done ? '未完了に戻す' : '完了にする'}
-      />
-      <div className="flex-1">
-        <p className={`font-medium ${done ? 'line-through text-gray-400' : ''}`}>
-          {habit.name}
-        </p>
-        {habit.description && (
-          <p className="text-sm text-gray-500">{habit.description}</p>
-        )}
-      </div>
-      <span
-        className="w-3 h-3 rounded-full flex-shrink-0"
-        style={{ backgroundColor: habit.color }}
-      />
+      >
+        <span
+          className="text-sm flex-shrink-0 mt-0.5"
+          style={{ fontFamily: "var(--font-terminal)", color: activeColor, fontSize: '1.1rem' }}
+        >
+          {done ? '[DONE]' : '[    ]'}
+        </span>
+        <div className="flex-1 min-w-0">
+          <p
+            className="text-sm leading-snug"
+            style={{ color: done ? dimColor : activeColor }}
+          >
+            &gt; {habit.name}
+          </p>
+          {habit.description && (
+            <p className="text-xs mt-0.5" style={{ color: mutedColor }}>
+              {habit.description}
+            </p>
+          )}
+        </div>
+      </button>
     </li>
   )
 }

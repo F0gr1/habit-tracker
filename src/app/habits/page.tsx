@@ -12,8 +12,19 @@ export default async function HabitsPage() {
   })
 
   return (
-    <main className="max-w-2xl mx-auto py-10 px-4">
-      <h1 className="text-2xl font-bold mb-8">習慣トラッカー</h1>
+    <main className="max-w-4xl mx-auto py-10 px-4">
+      <header className="mb-8">
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+          SYSTEM BOOT... OK
+        </p>
+        <h1
+          className="text-4xl mt-1 cursor"
+          style={{ fontFamily: "var(--font-terminal)", color: "var(--green)" }}
+        >
+          &gt; HABIT TRACKER v1.0
+        </h1>
+        <div className="mt-2 h-px" style={{ background: "var(--green-muted)" }} />
+      </header>
       <AddHabitForm />
       <HabitList habits={habits} />
     </main>

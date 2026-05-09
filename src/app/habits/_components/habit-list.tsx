@@ -5,6 +5,52 @@ type Props = {
   habits: HabitModel[]
 }
 
+type ColumnVariant = 'green' | 'cyan'
+
+function Column({
+  title,
+  habits,
+  variant,
+}: {
+  title: string
+  habits: HabitModel[]
+  variant: ColumnVariant
+}) {
+  const isGreen = variant === 'green'
+  const headerColor = isGreen ? 'var(--green)' : 'var(--cyan)'
+  const mutedColor  = isGreen ? 'var(--text-muted)' : '#1a4a5a'
+  const borderClass = isGreen ? 'terminal-border' : 'terminal-border-cyan'
+
+  return (
+    <div className="flex-1 min-w-0">
+      <h2
+        className="text-2xl mb-3 pb-1"
+        style={{
+          fontFamily: "var(--font-terminal)",
+          color: headerColor,
+          borderBottom: `1px solid ${mutedColor}`,
+        }}
+      >
+        [ {title} ]
+      </h2>
+      {habits.length === 0 ? (
+        <p
+          className={`text-sm py-4 text-center ${borderClass}`}
+          style={{ color: mutedColor }}
+        >
+          -- EMPTY --
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {habits.map((habit) => (
+            <HabitCard key={habit.id} habit={habit} variant={variant} />
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 export function HabitList({ habits }: Props) {
   if (habits.length === 0) {
     return (
@@ -14,11 +60,13 @@ export function HabitList({ habits }: Props) {
     )
   }
 
+  const daily  = habits.filter((h) => h.frequency === 'DAILY')
+  const weekly = habits.filter((h) => h.frequency === 'WEEKLY')
+
   return (
-    <ul className="flex flex-col gap-3">
-      {habits.map((habit) => (
-        <HabitCard key={habit.id} habit={habit} />
-      ))}
-    </ul>
+    <div className="flex gap-8">
+      <Column title="DAILY" habits={daily}  variant="green" />
+      <Column title="WEEKLY" habits={weekly} variant="cyan" />
+    </div>
   )
 }

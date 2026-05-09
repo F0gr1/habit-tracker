@@ -6,6 +6,7 @@ import { z } from 'zod'
 
 const AddHabitSchema = z.object({
   name: z.string().min(1, '習慣名を入力してください').max(50, '50文字以内で入力してください'),
+  frequency: z.enum(['DAILY', 'WEEKLY']),
 })
 
 // TODO: 認証実装後は session.user.id に差し替える
@@ -17,7 +18,10 @@ export async function addHabit(
   prevState: ActionResult,
   formData: FormData,
 ): Promise<ActionResult> {
-  const parsed = AddHabitSchema.safeParse({ name: formData.get('name') })
+  const parsed = AddHabitSchema.safeParse({
+    name: formData.get('name'),
+    frequency: formData.get('frequency'),
+  })
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? '入力が正しくありません' }
@@ -26,6 +30,7 @@ export async function addHabit(
   await prisma.habit.create({
     data: {
       name: parsed.data.name,
+      frequency: parsed.data.frequency,
       // connectOrCreate でデフォルトの開発用ユーザーを自動生成する
       user: {
         connectOrCreate: {
