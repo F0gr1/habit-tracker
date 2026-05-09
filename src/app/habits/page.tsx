@@ -12,7 +12,7 @@ export default async function HabitsPage() {
   })
 
   return (
-    <main className="max-w-4xl mx-auto py-10 px-4">
+    <main className="max-w-6xl mx-auto py-10 px-8">
       <header className="mb-8">
         <p className="text-xs" style={{ color: "var(--text-muted)" }}>
           SYSTEM BOOT... OK
