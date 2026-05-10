@@ -8,53 +8,58 @@ export function AddHabitForm() {
   const [state, action, isPending] = useActionState<ActionResult, FormData>(addHabit, undefined)
 
   return (
-    <form action={action} className="mb-8">
-      <div
-        className="flex gap-0 terminal-border"
-        style={{ fontFamily: "var(--font-terminal)" }}
+    <form action={action} className="mb-10">
+      <p
+        className="text-xs mb-2"
+        style={{ fontFamily: "var(--font-pixel)", color: "var(--text-muted)", fontSize: "0.55rem" }}
       >
-        <span
-          className="px-3 py-2 text-lg flex-shrink-0 select-none"
-          style={{ color: "var(--green-dim)", borderRight: "1px solid var(--border)" }}
-        >
-          &gt;
-        </span>
+        ▶ REGISTER NEW QUEST
+      </p>
+
+      <div className="pixel-input flex gap-0">
         <input
           name="name"
-          placeholder="NEW QUEST..."
-          className="flex-1 px-3 py-2 text-lg bg-transparent outline-none placeholder:opacity-30"
-          style={{ color: "var(--green)" }}
+          placeholder="Quest name..."
+          className="flex-1 px-4 py-3 bg-transparent outline-none text-sm placeholder:opacity-30"
+          style={{ color: "var(--text)" }}
           required
         />
         <select
           name="frequency"
           defaultValue="DAILY"
-          className="px-3 py-2 text-lg bg-transparent outline-none cursor-pointer"
+          className="px-3 py-3 bg-transparent outline-none cursor-pointer text-xs"
           style={{
-            color: "var(--green)",
-            borderLeft: "1px solid var(--border)",
+            color: "var(--gold)",
+            borderLeft: "2px solid var(--text-muted)",
+            fontFamily: "var(--font-pixel)",
+            fontSize: "0.55rem",
           }}
         >
-          <option value="DAILY"  style={{ background: "#060d06" }}>DAILY</option>
-          <option value="WEEKLY" style={{ background: "#060d06" }}>WEEKLY</option>
+          <option value="DAILY"  style={{ background: "#060c16" }}>DAILY</option>
+          <option value="WEEKLY" style={{ background: "#060c16" }}>WEEKLY</option>
         </select>
         <button
           type="submit"
           disabled={isPending}
-          className="px-4 py-2 text-lg disabled:opacity-40 transition-colors"
+          className="px-5 py-3 text-xs disabled:opacity-40 transition-all"
           style={{
+            fontFamily: "var(--font-pixel)",
+            fontSize: "0.55rem",
             color: "var(--bg)",
-            background: isPending ? "var(--green-dim)" : "var(--green)",
-            borderLeft: "1px solid var(--border)",
-            fontFamily: "var(--font-terminal)",
+            background: isPending ? "var(--gold-dim)" : "var(--gold)",
+            borderLeft: "2px solid var(--text-muted)",
           }}
         >
-          {isPending ? 'LOADING' : 'ADD_'}
+          {isPending ? '...' : 'ADD'}
         </button>
       </div>
+
       {state?.error && (
-        <p className="mt-2 text-sm" style={{ color: "#ff4444" }}>
-          ! {state.error}
+        <p
+          className="mt-2 text-xs"
+          style={{ fontFamily: "var(--font-pixel)", color: "#f87171", fontSize: "0.55rem" }}
+        >
+          ✗ {state.error}
         </p>
       )}
     </form>

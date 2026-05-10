@@ -1,47 +1,43 @@
 import type { HabitModel } from '@/generated/prisma/models'
 import { HabitCard } from './habit-card'
 
-type Props = {
-  habits: HabitModel[]
-}
-
-type ColumnVariant = 'green' | 'cyan'
+type ColumnVariant = 'green' | 'blue'
 
 function Column({
   title,
+  label,
   habits,
   variant,
 }: {
   title: string
+  label: string
   habits: HabitModel[]
   variant: ColumnVariant
 }) {
-  const isGreen = variant === 'green'
-  const headerColor = isGreen ? 'var(--green)' : 'var(--cyan)'
-  const mutedColor  = isGreen ? 'var(--text-muted)' : '#1a4a5a'
-  const borderClass = isGreen ? 'terminal-border' : 'terminal-border-cyan'
+  const color      = variant === 'green' ? 'var(--green)'      : 'var(--blue)'
+  const mutedColor = variant === 'green' ? 'var(--green-dim)'  : 'var(--blue-dim)'
+  const boxClass   = variant === 'green' ? 'pixel-box-green'   : 'pixel-box-blue'
 
   return (
     <div className="flex-1 min-w-0">
-      <h2
-        className="text-2xl mb-3 pb-1"
-        style={{
-          fontFamily: "var(--font-terminal)",
-          color: headerColor,
-          borderBottom: `1px solid ${mutedColor}`,
-        }}
-      >
-        [ {title} ]
-      </h2>
-      {habits.length === 0 ? (
-        <p
-          className={`text-sm py-4 text-center ${borderClass}`}
-          style={{ color: mutedColor }}
-        >
-          -- EMPTY --
+      <div className="mb-4">
+        <p className="text-xs mb-1" style={{ fontFamily: "var(--font-pixel)", color: mutedColor }}>
+          {label}
         </p>
+        <h2 className="text-base" style={{ fontFamily: "var(--font-pixel)", color }}>
+          {title}
+        </h2>
+      </div>
+
+      {habits.length === 0 ? (
+        <div
+          className={`${boxClass} p-4 text-center text-xs`}
+          style={{ color: mutedColor, fontFamily: "var(--font-pixel)" }}
+        >
+          -- NO QUESTS --
+        </div>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-3">
           {habits.map((habit) => (
             <HabitCard key={habit.id} habit={habit} variant={variant} />
           ))}
@@ -51,11 +47,11 @@ function Column({
   )
 }
 
-export function HabitList({ habits }: Props) {
+export function HabitList({ habits }: { habits: HabitModel[] }) {
   if (habits.length === 0) {
     return (
-      <p className="text-gray-500 text-sm text-center py-8">
-        習慣がまだありません。上のフォームから追加してみましょう！
+      <p className="text-center text-xs py-12" style={{ color: "var(--text-muted)", fontFamily: "var(--font-pixel)" }}>
+        ★ NO QUESTS REGISTERED ★
       </p>
     )
   }
@@ -65,8 +61,8 @@ export function HabitList({ habits }: Props) {
 
   return (
     <div className="flex gap-8">
-      <Column title="DAILY" habits={daily}  variant="green" />
-      <Column title="WEEKLY" habits={weekly} variant="cyan" />
+      <Column title="DAILY QUESTS"  label="◆ EVERY DAY"  habits={daily}  variant="green" />
+      <Column title="WEEKLY QUESTS" label="◆ EVERY WEEK" habits={weekly} variant="blue"  />
     </div>
   )
 }

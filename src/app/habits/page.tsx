@@ -12,19 +12,23 @@ export default async function HabitsPage() {
   })
 
   return (
-    <main className="max-w-6xl mx-auto py-10 px-8">
-      <header className="mb-8">
-        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-          SYSTEM BOOT... OK
+    <main className="max-w-5xl mx-auto py-10 px-6">
+      <header className="mb-10">
+        <p className="text-xs mb-3" style={{ color: "var(--text-muted)", fontFamily: "var(--font-pixel)" }}>
+          ★ WELCOME BACK, HERO ★
         </p>
         <h1
-          className="text-4xl mt-1 cursor"
-          style={{ fontFamily: "var(--font-terminal)", color: "var(--green)" }}
+          className="text-2xl leading-relaxed cursor"
+          style={{ fontFamily: "var(--font-pixel)", color: "var(--gold)" }}
         >
-          &gt; HABIT TRACKER v1.0
+          QUEST LOG
         </h1>
-        <div className="mt-2 h-px" style={{ background: "var(--green-muted)" }} />
+        <div
+          className="mt-4 h-0.5"
+          style={{ background: "linear-gradient(to right, var(--gold-dim), transparent)" }}
+        />
       </header>
+
       <AddHabitForm />
       <HabitList habits={habits} />
     </main>

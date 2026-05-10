@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, VT323 } from "next/font/google";
+import { Geist_Mono, Press_Start_2P } from "next/font/google";
 import "./globals.css";
 
 const geistMono = Geist_Mono({
@@ -7,14 +7,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const vt323 = VT323({
-  variable: "--font-terminal",
+const pressStart = Press_Start_2P({
+  variable: "--font-pixel",
   weight: "400",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "HABIT TRACKER",
+  title: "QUEST LOG",
   description: "RPG-style habit tracker",
 };
 
@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html
       lang="ja"
-      className={`${geistMono.variable} ${vt323.variable} h-full`}
+      className={`${geistMono.variable} ${pressStart.variable} h-full`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

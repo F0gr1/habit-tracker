@@ -1,45 +1,91 @@
 @import "tailwindcss";
 
 :root {
-  --bg:          #060d06;
-  --green:       #00ff41;
-  --green-dim:   #00cc33;
-  --green-muted: #1a4d1a;
-  --cyan:        #00d4ff;
-  --cyan-dim:    #0099bb;
-  --cyan-muted:  #0a2d3a;
-  --border:      #1a3a1a;
-  --text-muted:  #4a7a4a;
+  --bg:           #080f1a;
+  --bg-card:      #0d1b2e;
+  --bg-card-done: #0a2010;
+
+  --gold:         #fbbf24;
+  --gold-dim:     #92620a;
+
+  --green:        #34d399;
+  --green-dim:    #065f46;
+  --green-muted:  #022c20;
+
+  --blue:         #60a5fa;
+  --blue-dim:     #1e3a8a;
+  --blue-muted:   #0a1a3a;
+
+  --text:         #cbd5e1;
+  --text-muted:   #334155;
+
+  --pixel-border-green: #34d399;
+  --pixel-border-blue:  #60a5fa;
 }
 
 @theme inline {
   --color-background: var(--bg);
-  --font-mono: var(--font-mono);
-  --font-terminal: var(--font-terminal);
+  --font-mono:  var(--font-mono);
+  --font-pixel: var(--font-pixel);
 }
 
 body {
   background: var(--bg);
-  color: var(--green);
+  color: var(--text);
   font-family: var(--font-mono), "Courier New", monospace;
+}
+
+/* NES-style pixel box — green */
+.pixel-box-green {
+  background: var(--bg-card);
+  border: 3px solid var(--green-dim);
+  box-shadow:
+    0 0 0 1px var(--green),
+    inset 0 0 0 1px var(--green-dim);
+}
+
+/* NES-style pixel box — blue */
+.pixel-box-blue {
+  background: var(--bg-card);
+  border: 3px solid var(--blue-dim);
+  box-shadow:
+    0 0 0 1px var(--blue),
+    inset 0 0 0 1px var(--blue-dim);
+}
+
+/* Glow on hover */
+.pixel-box-green:hover {
+  box-shadow:
+    0 0 0 1px var(--green),
+    0 0 12px rgba(52, 211, 153, 0.2),
+    inset 0 0 0 1px var(--green-dim);
+}
+.pixel-box-blue:hover {
+  box-shadow:
+    0 0 0 1px var(--blue),
+    0 0 12px rgba(96, 165, 250, 0.2),
+    inset 0 0 0 1px var(--blue-dim);
+}
+
+/* Input/form box */
+.pixel-input {
+  background: #060c16;
+  border: 3px solid var(--text-muted);
+  box-shadow: 0 0 0 1px #1e293b;
+  color: var(--text);
+  outline: none;
+}
+.pixel-input:focus-within {
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 1px var(--gold), 0 0 8px rgba(251, 191, 36, 0.15);
 }
 
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
 }
-
 .cursor::after {
-  content: "_";
+  content: "█";
   animation: blink 1s step-end infinite;
-}
-
-.terminal-border {
-  border: 1px solid var(--border);
-  box-shadow: 0 0 8px rgba(0, 255, 65, 0.1);
-}
-
-.terminal-border-cyan {
-  border: 1px solid #0a3a4a;
-  box-shadow: 0 0 8px rgba(0, 212, 255, 0.1);
+  font-size: 0.8em;
 }
