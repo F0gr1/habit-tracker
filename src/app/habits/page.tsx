@@ -6,12 +6,16 @@ import { AddHabitForm } from './_components/add-habit-form'
 const DEV_USER_ID = 'dev-user'
 
 export default async function HabitsPage() {
-  const habits = await prisma.habit.findMany({
-    where: { userId: DEV_USER_ID },
-    orderBy: { createdAt: 'desc' },
-  })
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
 
-  return (
+    const [habits ,logs] = await Promise.all([
+        prisma.habit.findMany({ where: {userId: DEV_USER_ID}, orderBy: { createdAt: 'asc' }}),
+        prisma.habitLog.findMany({ where: { date: today }})
+    ])
+
+    const checkedIds = new Set(logs.map(log => log.habitId))
+  return (  
     <main className="max-w-6xl mx-auto py-10 px-8">
       <header className="mb-8">
         <p className="text-xs" style={{ color: "var(--text-muted)" }}>
@@ -26,7 +30,7 @@ export default async function HabitsPage() {
         <div className="mt-2 h-px" style={{ background: "var(--green-muted)" }} />
       </header>
       <AddHabitForm />
-      <HabitList habits={habits} />
+      <HabitList habits={habits} checkedIds={checkedIds} />
     </main>
   )
 }

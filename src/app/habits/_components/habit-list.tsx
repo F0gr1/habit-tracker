@@ -3,6 +3,7 @@ import { HabitCard } from './habit-card'
 
 type Props = {
   habits: HabitModel[]
+  checkedIds: Set<string>
 }
 
 type ColumnVariant = 'green' | 'cyan'
@@ -11,10 +12,12 @@ function Column({
   title,
   habits,
   variant,
+  checkedIds,
 }: {
   title: string
   habits: HabitModel[]
   variant: ColumnVariant
+  checkedIds: Set<string>
 }) {
   const isGreen = variant === 'green'
   const headerColor = isGreen ? 'var(--green)' : 'var(--cyan)'
@@ -43,7 +46,7 @@ function Column({
       ) : (
         <ul className="flex flex-col gap-2">
           {habits.map((habit) => (
-            <HabitCard key={habit.id} habit={habit} variant={variant} />
+            <HabitCard key={habit.id} habit={habit} variant={variant} initialDone={checkedIds.has(habit.id)} />
           ))}
         </ul>
       )}
@@ -51,7 +54,7 @@ function Column({
   )
 }
 
-export function HabitList({ habits }: Props) {
+export function HabitList({ habits, checkedIds }: Props) {
   if (habits.length === 0) {
     return (
       <p className="text-gray-500 text-sm text-center py-8">
@@ -65,8 +68,8 @@ export function HabitList({ habits }: Props) {
 
   return (
     <div className="flex gap-8">
-      <Column title="DAILY" habits={daily}  variant="green" />
-      <Column title="WEEKLY" habits={weekly} variant="cyan" />
+      <Column title="DAILY"  habits={daily}  variant="green" checkedIds={checkedIds} />
+      <Column title="WEEKLY" habits={weekly} variant="cyan"  checkedIds={checkedIds} />
     </div>
   )
 }

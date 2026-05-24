@@ -3,17 +3,24 @@
 
 import { useState } from 'react'
 import type { HabitModel } from '@/generated/prisma/models'
+import { toggleHabitLog } from '../_actions/habit-actions'
 
 type ColumnVariant = 'green' | 'cyan'
 
 type Props = {
   habit: HabitModel
   variant: ColumnVariant
+  initialDone?: boolean
 }
 
-export function HabitCard({ habit, variant }: Props) {
-  const [done, setDone] = useState(false)
 
+export function HabitCard({ habit, variant, initialDone = false }: Props) {
+  const [done, setDone] = useState(initialDone)
+
+  async function handleClick() {
+    setDone(!done)
+    await toggleHabitLog(habit.id)
+  }
   const activeColor  = variant === 'green' ? 'var(--green)'     : 'var(--cyan)'
   const dimColor     = variant === 'green' ? 'var(--green-dim)'  : 'var(--cyan-dim)'
   const mutedColor   = variant === 'green' ? 'var(--text-muted)' : '#1a4a5a'
@@ -25,7 +32,7 @@ export function HabitCard({ habit, variant }: Props) {
       style={{ background: done ? (variant === 'green' ? 'var(--green-muted)' : 'var(--cyan-muted)') : 'transparent' }}
     >
       <button
-        onClick={() => setDone(!done)}
+        onClick={() => handleClick()}
         className="w-full text-left flex items-start gap-3"
         aria-label={done ? '未完了に戻す' : '完了にする'}
       >

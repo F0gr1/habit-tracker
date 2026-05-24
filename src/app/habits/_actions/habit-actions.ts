@@ -40,6 +40,31 @@ export async function addHabit(
       },
     },
   })
+  revalidatePath('/habits')
+}
 
+export async function toggleHabitLog(habitId: string) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const existing = await prisma.habitLog.findFirst({
+    where: {
+      habitId,
+      date: today,
+    },
+  })
+
+  if (existing) {
+    await prisma.habitLog.delete({
+      where: { id: existing.id },
+    })
+  } else {
+    await prisma.habitLog.create({
+      data: {
+        habitId,
+        date: today,
+      },
+    })
+  }
   revalidatePath('/habits')
 }
