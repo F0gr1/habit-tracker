@@ -6,22 +6,37 @@ export type HabitProgress = {
   windowDays: number;
 };
 
+function isUtcDateOnly(date: Date) {
+  return (
+    date.getUTCHours() === 0 &&
+    date.getUTCMinutes() === 0 &&
+    date.getUTCSeconds() === 0 &&
+    date.getUTCMilliseconds() === 0
+  );
+}
+
+export function dateKeyToDate(dateKey: string) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
 export function getStartOfLocalDay(date = new Date()) {
-  const copy = new Date(date);
-  copy.setHours(0, 0, 0, 0);
-  return copy;
+  return dateKeyToDate(toDateKey(date));
 }
 
 export function addDays(date: Date, days: number) {
   const copy = getStartOfLocalDay(date);
-  copy.setDate(copy.getDate() + days);
+  copy.setUTCDate(copy.getUTCDate() + days);
   return copy;
 }
 
 export function toDateKey(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
+  const year = isUtcDateOnly(date) ? date.getUTCFullYear() : date.getFullYear();
+  const monthIndex = isUtcDateOnly(date) ? date.getUTCMonth() : date.getMonth();
+  const dateNumber = isUtcDateOnly(date) ? date.getUTCDate() : date.getDate();
+  const month = String(monthIndex + 1).padStart(2, "0");
+  const day = String(dateNumber).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 

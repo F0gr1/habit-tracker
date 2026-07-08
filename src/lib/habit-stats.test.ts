@@ -1,10 +1,18 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { getHabitProgress, getHabitStatusLabel, toDateKey } from "./habit-stats.ts";
+import { dateKeyToDate, getHabitProgress, getHabitStatusLabel, getStartOfLocalDay, toDateKey } from "./habit-stats.ts";
 
 test("toDateKey formats dates as yyyy-mm-dd", () => {
   assert.equal(toDateKey(new Date(2026, 0, 8)), "2026-01-08");
+});
+
+test("date-only values round-trip without shifting to the previous UTC day", () => {
+  const localAfternoon = new Date(2026, 6, 8, 13, 30);
+  const dbDate = getStartOfLocalDay(localAfternoon);
+
+  assert.equal(dbDate.toISOString().slice(0, 10), "2026-07-08");
+  assert.equal(toDateKey(dateKeyToDate("2026-07-08")), "2026-07-08");
 });
 
 test("getHabitProgress counts current streak from today backward", () => {

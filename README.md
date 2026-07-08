@@ -96,7 +96,7 @@ npm run prisma:push
 - Server Actionsはフォーム値やIDを信用せず、Zodで検証してからDBに触ります。
 - `toggleHabitLog` は `habitId` だけで更新せず、必ず `userId` も条件に含めて所有者を確認します。
 - `/habits` はPrismaのモデルをそのままClient Componentへ渡さず、必要な文字列・数値・真偽値だけのView Modelに変換しています。これにより、DateやPrisma固有型のシリアライズ問題を避けます。
-- ストリークや7日間の集計は `src/lib/habit-stats.ts` に分離しています。UIから切り離すと、テストしやすく、仕様変更時の影響範囲も小さくなります。
+- ストリークや7日間の集計は `src/lib/habit-stats.ts` に分離しています。`@db.Date` に保存する値はUTC midnightへ正規化し、ローカル日付が前日にズレないようにしています。
 - ランディングページはテンプレート文言を削除し、何を作ったか、なぜ見る価値があるか、どの技術を使っているかがすぐ分かる構成にしています。
 
 ## 3年目エンジニア向けの読み方

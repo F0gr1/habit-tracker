@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toggleHabitLog } from "../_actions/habit-actions";
 import type { HabitCardData } from "./habit-list";
 
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export function HabitCard({ habit, variant }: Props) {
+  const router = useRouter();
   const [done, setDone] = useState(habit.todayDone);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -29,7 +31,10 @@ export function HabitCard({ habit, variant }: Props) {
         if (result?.ok === false) {
           setDone(!nextDone);
           setError(result.error);
+          return;
         }
+
+        router.refresh();
       } catch {
         setDone(!nextDone);
         setError("習慣の完了状態を更新できませんでした。もう一度お試しください。");

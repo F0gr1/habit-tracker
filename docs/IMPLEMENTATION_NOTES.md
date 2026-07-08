@@ -74,6 +74,10 @@ const habit = await prisma.habit.findFirst({
 
 日付や集計はバグが出やすいので、UIより先に関数単位でテストできる状態にしておく価値があります。
 
+特に `HabitLog.date` はPostgreSQLの `@db.Date` なので、時刻ではなく日付だけを保存したい値です。JSTの `2026-07-08 00:00` をそのまま `Date` として渡すとUTCでは前日の `2026-07-07T15:00Z` になり、DBに前日として保存されることがあります。
+
+そのため、今回の実装では日付キー `YYYY-MM-DD` を作り、そのキーからUTC midnightの `Date` を作ってDBへ渡します。日付だけを扱うときは「Dateオブジェクトは時刻とタイムゾーンを持つ」という前提を忘れないことが重要です。
+
 ## 次に自分で実装するなら
 
 1. `src/lib/current-user.ts` をNextAuthのセッション取得に差し替える。

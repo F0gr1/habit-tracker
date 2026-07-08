@@ -22,6 +22,14 @@ When the user toggles today's completion state
 Then the action creates today's log if none exists
 Or deletes today's log if it already exists
 And the dashboard path is revalidated
+And the client refreshes the dashboard summary from the server
+
+#### Scenario: User toggles completion in a non-UTC timezone
+
+Given the application server is running outside UTC
+When the user toggles today's completion state
+Then the stored date keeps the user's local calendar day
+And the dashboard counts the log as done today
 
 #### Scenario: User toggles an invalid habit id
 
