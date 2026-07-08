@@ -1,70 +1,102 @@
-'use server'
+"use server";
 
-import { prisma } from '@/lib/prisma'
-import { revalidatePath } from 'next/cache'
-import { z } from 'zod'
+import { getCurrentUserId } from "@/lib/current-user";
+import { getStartOfLocalDay } from "@/lib/habit-stats";
+import {
+  AddHabitInputSchema,
+  ToggleHabitInputSchema,
+  getFirstValidationError,
+} from "@/lib/habit-validation";
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
-const AddHabitSchema = z.object({
-  name: z.string().min(1, '習慣名を入力してください').max(50, '50文字以内で入力してください'),
-  frequency: z.enum(['DAILY', 'WEEKLY']),
-})
-
-// TODO: 認証実装後は session.user.id に差し替える
-const DEV_USER_ID = 'dev-user'
-
-export type ActionResult = { error: string } | undefined
+export type ActionResult =
+  | { ok: true; message?: string }
+  | { ok: false; error: string }
+  | undefined;
 
 export async function addHabit(
-  prevState: ActionResult,
+  _prevState: ActionResult,
   formData: FormData,
 ): Promise<ActionResult> {
-  const parsed = AddHabitSchema.safeParse({
-    name: formData.get('name'),
-    frequency: formData.get('frequency'),
-  })
+  const parsed = AddHabitInputSchema.safeParse({
+    name: formData.get("name"),
+    frequency: formData.get("frequency"),
+  });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? '入力が正しくありません' }
+    return { ok: false, error: getFirstValidationError(parsed.error) };
   }
 
-  await prisma.habit.create({
-    data: {
-      name: parsed.data.name,
-      frequency: parsed.data.frequency,
-      // connectOrCreate でデフォルトの開発用ユーザーを自動生成する
-      user: {
-        connectOrCreate: {
-          where: { id: DEV_USER_ID },
-          create: { id: DEV_USER_ID, email: 'dev@example.com' },
+  const userId = getCurrentUserId();
+
+  try {
+    await prisma.habit.create({
+      data: {
+        name: parsed.data.name,
+        frequency: parsed.data.frequency,
+        user: {
+          connectOrCreate: {
+            where: { id: userId },
+            create: { id: userId, email: "dev@example.com" },
+          },
         },
       },
-    },
-  })
-  revalidatePath('/habits')
+    });
+  } catch (error) {
+    console.error("Failed to add habit", error);
+    return { ok: false, error: "習慣を保存できませんでした。データベース接続を確認してください。" };
+  }
+
+  revalidatePath("/habits");
+  return { ok: true, message: "習慣を追加しました" };
 }
 
-export async function toggleHabitLog(habitId: string) {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+export async function toggleHabitLog(habitId: string): Promise<ActionResult> {
+  const parsed = ToggleHabitInputSchema.safeParse({ habitId });
 
-  const existing = await prisma.habitLog.findFirst({
-    where: {
-      habitId,
-      date: today,
-    },
-  })
-
-  if (existing) {
-    await prisma.habitLog.delete({
-      where: { id: existing.id },
-    })
-  } else {
-    await prisma.habitLog.create({
-      data: {
-        habitId,
-        date: today,
-      },
-    })
+  if (!parsed.success) {
+    return { ok: false, error: getFirstValidationError(parsed.error) };
   }
-  revalidatePath('/habits')
+
+  const userId = getCurrentUserId();
+  const today = getStartOfLocalDay();
+
+  try {
+    const habit = await prisma.habit.findFirst({
+      where: { id: parsed.data.habitId, userId },
+      select: { id: true },
+    });
+
+    if (!habit) {
+      return { ok: false, error: "この習慣を更新する権限がありません。" };
+    }
+
+    const existing = await prisma.habitLog.findUnique({
+      where: {
+        habitId_date: {
+          habitId: parsed.data.habitId,
+          date: today,
+        },
+      },
+      select: { id: true },
+    });
+
+    if (existing) {
+      await prisma.habitLog.delete({ where: { id: existing.id } });
+    } else {
+      await prisma.habitLog.create({
+        data: {
+          habitId: parsed.data.habitId,
+          date: today,
+        },
+      });
+    }
+  } catch (error) {
+    console.error("Failed to toggle habit log", error);
+    return { ok: false, error: "習慣の完了状態を更新できませんでした。もう一度お試しください。" };
+  }
+
+  revalidatePath("/habits");
+  return { ok: true };
 }

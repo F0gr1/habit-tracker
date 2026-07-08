@@ -1,75 +1,89 @@
-import type { HabitModel } from '@/generated/prisma/models'
-import { HabitCard } from './habit-card'
+import { HabitCard } from "./habit-card";
+
+export type HabitCardData = {
+  id: string;
+  name: string;
+  description: string | null;
+  frequency: "DAILY" | "WEEKLY";
+  todayDone: boolean;
+  streakDays: number;
+  completionsInWindow: number;
+  windowDays: number;
+  statusLabel: string;
+};
 
 type Props = {
-  habits: HabitModel[]
-  checkedIds: Set<string>
-}
+  habits: HabitCardData[];
+};
 
-type ColumnVariant = 'green' | 'cyan'
+type ColumnVariant = "green" | "cyan";
 
 function Column({
   title,
   habits,
   variant,
-  checkedIds,
 }: {
-  title: string
-  habits: HabitModel[]
-  variant: ColumnVariant
-  checkedIds: Set<string>
+  title: string;
+  habits: HabitCardData[];
+  variant: ColumnVariant;
 }) {
-  const isGreen = variant === 'green'
-  const headerColor = isGreen ? 'var(--green)' : 'var(--cyan)'
-  const mutedColor  = isGreen ? 'var(--text-muted)' : '#1a4a5a'
-  const borderClass = isGreen ? 'terminal-border' : 'terminal-border-cyan'
+  const isGreen = variant === "green";
+  const headerColor = isGreen ? "var(--green)" : "var(--cyan)";
+  const mutedColor = isGreen ? "var(--text-muted)" : "#2e7080";
+  const borderClass = isGreen ? "terminal-border" : "terminal-border-cyan";
+  const doneCount = habits.filter((habit) => habit.todayDone).length;
 
   return (
-    <div className="flex-1 min-w-0">
-      <h2
-        className="text-2xl mb-3 pb-1"
-        style={{
-          fontFamily: "var(--font-terminal)",
-          color: headerColor,
-          borderBottom: `1px solid ${mutedColor}`,
-        }}
-      >
-        [ {title} ]
-      </h2>
-      {habits.length === 0 ? (
-        <p
-          className={`text-sm py-4 text-center ${borderClass}`}
-          style={{ color: mutedColor }}
-        >
-          -- EMPTY --
+    <section className="min-w-0 flex-1">
+      <div className="mb-3 flex items-end justify-between gap-4 border-b pb-2" style={{ borderColor: mutedColor }}>
+        <h2 className="text-2xl" style={{ fontFamily: "var(--font-terminal)", color: headerColor }}>
+          [ {title} ]
+        </h2>
+        <p className="text-xs tracking-[0.25em]" style={{ color: mutedColor }}>
+          {doneCount}/{habits.length} DONE
         </p>
+      </div>
+      {habits.length === 0 ? (
+        <div className={`px-4 py-8 text-center ${borderClass}`} style={{ color: mutedColor }}>
+          <p className="text-sm">-- NO {title} QUESTS --</p>
+          <p className="mt-2 text-xs">Use the quick add panel to create one.</p>
+        </div>
       ) : (
         <ul className="flex flex-col gap-2">
           {habits.map((habit) => (
-            <HabitCard key={habit.id} habit={habit} variant={variant} initialDone={checkedIds.has(habit.id)} />
+            <HabitCard key={habit.id} habit={habit} variant={variant} />
           ))}
         </ul>
       )}
-    </div>
-  )
+    </section>
+  );
 }
 
-export function HabitList({ habits, checkedIds }: Props) {
+export function HabitList({ habits }: Props) {
   if (habits.length === 0) {
     return (
-      <p className="text-gray-500 text-sm text-center py-8">
-        習慣がまだありません。上のフォームから追加してみましょう！
-      </p>
-    )
+      <section className="terminal-border px-5 py-10 text-center sm:px-8">
+        <p className="text-xs tracking-[0.35em]" style={{ color: "var(--text-muted)" }}>
+          EMPTY SAVE FILE
+        </p>
+        <h2 className="mt-2 text-3xl" style={{ fontFamily: "var(--font-terminal)", color: "var(--green)" }}>
+          Start with one habit you can finish today.
+        </h2>
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-6" style={{ color: "var(--text-muted)" }}>
+          Add a tiny daily or weekly quest above. The dashboard will immediately show today&apos;s status, a
+          seven-day completion snapshot, and your current streak.
+        </p>
+      </section>
+    );
   }
 
-  const daily  = habits.filter((h) => h.frequency === 'DAILY')
-  const weekly = habits.filter((h) => h.frequency === 'WEEKLY')
+  const daily = habits.filter((habit) => habit.frequency === "DAILY");
+  const weekly = habits.filter((habit) => habit.frequency === "WEEKLY");
 
   return (
-    <div className="flex gap-8">
-      <Column title="DAILY"  habits={daily}  variant="green" checkedIds={checkedIds} />
-      <Column title="WEEKLY" habits={weekly} variant="cyan"  checkedIds={checkedIds} />
+    <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
+      <Column title="DAILY" habits={daily} variant="green" />
+      <Column title="WEEKLY" habits={weekly} variant="cyan" />
     </div>
-  )
+  );
 }
