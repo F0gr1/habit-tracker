@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "agent-browser": {
+      "description": "Use for browser automation, page inspection, screenshots, and end-to-end checks through the agent-browser MCP server.",
+      "mode": "subagent",
+      "permission": {
+        "edit": "deny",
+        "bash": "ask"
+      }
+    }
+  }
+}

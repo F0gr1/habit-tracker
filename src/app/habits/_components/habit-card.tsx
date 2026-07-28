@@ -1,78 +1,123 @@
 // チェックボックスのクリックイベントを扱うため Client Component
-'use client'
+"use client";
 
-import { useState } from 'react'
-import type { HabitModel } from '@/generated/prisma/models'
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toggleHabitLog } from "../_actions/habit-actions";
+import type { HabitCardData } from "./habit-list";
 
-type ColumnVariant = 'green' | 'blue'
+type ColumnVariant = "green" | "cyan";
 
 type Props = {
-  habit: HabitModel
-  variant: ColumnVariant
-}
+  habit: HabitCardData;
+  variant: ColumnVariant;
+};
 
 export function HabitCard({ habit, variant }: Props) {
-  const [done, setDone] = useState(false)
+  const router = useRouter();
+  const [done, setDone] = useState(habit.todayDone);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  const color    = variant === 'green' ? 'var(--green)'     : 'var(--blue)'
-  const dimColor = variant === 'green' ? 'var(--green-dim)' : 'var(--blue-dim)'
-  const boxClass = variant === 'green' ? 'pixel-box-green'  : 'pixel-box-blue'
+  function handleClick() {
+    const nextDone = !done;
+    setDone(nextDone);
+    setError(null);
+
+    startTransition(async () => {
+      try {
+        const result = await toggleHabitLog(habit.id);
+
+        if (result?.ok === false) {
+          setDone(!nextDone);
+          setError(result.error);
+          return;
+        }
+
+        router.refresh();
+      } catch {
+        setDone(!nextDone);
+        setError("習慣の完了状態を更新できませんでした。もう一度お試しください。");
+      }
+    });
+  }
+
+  const activeColor = variant === "green" ? "var(--green)" : "var(--cyan)";
+  const dimColor = variant === "green" ? "var(--green-dim)" : "var(--cyan-dim)";
+  const mutedColor = variant === "green" ? "var(--text-muted)" : "#2e7080";
+  const borderClass = variant === "green" ? "terminal-border" : "terminal-border-cyan";
+  const completedDays = Math.max(
+    0,
+    habit.completionsInWindow + (done && !habit.todayDone ? 1 : 0) - (!done && habit.todayDone ? 1 : 0),
+  );
+  const progressWidth = `${Math.min(100, Math.round((completedDays / habit.windowDays) * 100))}%`;
+  const streakDays = done ? Math.max(1, habit.streakDays + (habit.todayDone ? 0 : 1)) : 0;
+  const statusLabel = done
+    ? streakDays > 1
+      ? `${streakDays} DAY STREAK`
+      : "DONE TODAY"
+    : habit.todayDone
+      ? "OPEN TODAY"
+      : habit.statusLabel;
 
   return (
-    <li className={`${boxClass} transition-all`}>
+    <li
+      className={`p-3 ${borderClass} transition-all sm:p-4`}
+      style={{ background: done ? (variant === "green" ? "var(--green-muted)" : "var(--cyan-muted)") : "transparent" }}
+    >
       <button
-        onClick={() => setDone(!done)}
-        className="w-full text-left p-3 flex items-start gap-3"
-        aria-label={done ? '未完了に戻す' : '完了にする'}
+        onClick={handleClick}
+        disabled={isPending}
+        className="w-full text-left disabled:cursor-wait disabled:opacity-70"
+        aria-label={done ? "未完了に戻す" : "完了にする"}
+        aria-pressed={done}
       >
-        {/* チェックマーク */}
-        <span
-          className="flex-shrink-0 text-lg leading-none mt-0.5"
-          style={{ color: done ? 'var(--gold)' : dimColor }}
-        >
-          {done ? '★' : '☆'}
-        </span>
-
-        <div className="flex-1 min-w-0">
-          {/* 習慣名 */}
-          <p
-            className="text-sm leading-snug"
-            style={{ color: done ? 'var(--text-muted)' : color }}
+        <div className="flex items-start gap-3">
+          <span
+            className="mt-0.5 flex-shrink-0 text-sm"
+            style={{ fontFamily: "var(--font-terminal)", color: activeColor, fontSize: "1.1rem" }}
           >
-            {done && <span style={{ color: 'var(--gold)' }}>✓ </span>}
-            {habit.name}
-          </p>
-
-          {/* 説明 */}
-          {habit.description && (
-            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-              {habit.description}
-            </p>
-          )}
-
-          {/* 完了時の EXP テキスト */}
-          {done && (
-            <p
-              className="text-xs mt-1"
-              style={{ fontFamily: "var(--font-pixel)", color: 'var(--gold)', fontSize: '0.55rem' }}
-            >
-              + EXP GAINED!
-            </p>
-          )}
+            {done ? "[DONE]" : "[    ]"}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+              <p className="text-base leading-snug" style={{ color: done ? dimColor : activeColor }}>
+                &gt; {habit.name}
+              </p>
+              <span className="text-xs tracking-[0.25em]" style={{ color: done ? activeColor : mutedColor }}>
+                {isPending ? "SYNCING" : statusLabel}
+              </span>
+            </div>
+            {habit.description && (
+              <p className="mt-1 text-xs" style={{ color: mutedColor }}>
+                {habit.description}
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* ステータス */}
-        <span
-          className="flex-shrink-0 text-xs"
-          style={{
-            fontFamily: "var(--font-pixel)",
-            color: done ? 'var(--gold)' : dimColor,
-            fontSize: '0.5rem',
-          }}
-        >
-          {done ? 'DONE' : 'TODO'}
-        </span>
+        <div className="mt-4 grid grid-cols-3 gap-2 text-xs" style={{ color: mutedColor }}>
+          <span>
+            TODAY <strong style={{ color: done ? activeColor : mutedColor }}>{done ? "YES" : "NO"}</strong>
+          </span>
+          <span>
+            STREAK <strong style={{ color: activeColor }}>{streakDays}</strong>
+          </span>
+          <span>
+            7D <strong style={{ color: activeColor }}>{completedDays}/{habit.windowDays}</strong>
+          </span>
+        </div>
+
+        <div className="mt-3 h-1.5 overflow-hidden bg-black/40">
+          <div className="h-full transition-all" style={{ width: progressWidth, background: activeColor }} />
+        </div>
       </button>
+
+      {error && (
+        <p className="mt-3 text-xs" style={{ color: "#ff6b6b" }}>
+          ! {error}
+        </p>
+      )}
     </li>
-  )
+  );
 }
